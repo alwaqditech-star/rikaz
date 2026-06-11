@@ -1,0 +1,130 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { IconScale } from "@tabler/icons-react";
+
+export function LoginScreen() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password.trim(),
+        }),
+      });
+      const json = await res.json();
+
+      if (!json.success) {
+        setError(json.message || "بيانات الدخول غير صحيحة");
+        return;
+      }
+
+      let target = "/client";
+      if (json.data.role === "admin") {
+        target = "/admin";
+      } else if (json.data.is_first_login) {
+        target = "/client/first-login";
+      }
+
+      window.location.assign(target);
+    } catch {
+      setError("خطأ في الاتصال بالخادم");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div id="login-screen" className="show">
+      <div className="login-box">
+        <div className="login-logo">
+          <div className="login-logo-icon">
+            <IconScale size={28} stroke={1.8} />
+          </div>
+          <h1>ركاز</h1>
+          <p>نظام المحاسبة للقطاع غير الربحي</p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="login-field">
+            <label htmlFor="username">اسم المستخدم</label>
+            <input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              placeholder="مثال: admin أو rikaz_admin"
+              dir="ltr"
+              required
+            />
+          </div>
+          <div className="login-field">
+            <label htmlFor="password">كلمة المرور</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="كلمة المرور الأصلية — وليس password_hash"
+              dir="ltr"
+              required
+            />
+          </div>
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "جاري الدخول..." : "تسجيل الدخول"}
+          </button>
+          {error ? (
+            <div className="login-error" style={{ display: "block" }}>
+              {error}
+            </div>
+          ) : null}
+        </form>
+
+        <div className="login-users-hint">
+          <strong>مهم:</strong> الحقل الأول = <strong>username</strong> من قاعدة البيانات،
+          وليس <strong>association_name</strong>.
+          <br />
+          افتح المشروع من: <strong dir="ltr">http://localhost:3000</strong>
+          <br />
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: 8, marginLeft: 6 }}
+            onClick={() => {
+              setUsername("admin");
+              setPassword("admin123");
+              setError("");
+            }}
+          >
+            تعبئة مدير النظام
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: 8 }}
+            onClick={() => {
+              setUsername("rikaz_admin");
+              setPassword("demo123");
+              setError("");
+            }}
+          >
+            تعبئة الجمعية
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

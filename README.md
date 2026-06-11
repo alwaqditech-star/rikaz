@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ركاز — نظام المحاسبة للقطاع غير الربحي
 
-## Getting Started
+نظام محاسبي متكامل للجمعيات الخيرية، مبني وفق **خطة هندسة مشروع نظام ركاز المحاسبي الشامل — الإصدار المطور V2**، مع واجهة مطابقة لتصميم `rikaz.html`.
 
-First, run the development server:
+## التقنيات
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router)
+- **MySQL** — قاعدة البيانات
+- **RESTful API** — مسارات `/api/admin/*` و `/api/client/*`
+- **JWT + bcrypt** — المصادقة والأمان
+- **ExcelJS** — تصدير التقارير
+
+## هيكل المشروع
+
+```
+src/
+├── app/
+│   ├── page.tsx                    # تسجيل الدخول الموحد
+│   ├── (dashboard)/
+│   │   ├── admin/                  # لوحة تحكم مدير النظام
+│   │   └── client/                 # بوابة الجمعية المشتركة
+│   └── api/                        # RESTful API
+├── components/client/              # مكونات واجهة الجمعية
+└── lib/                            # قاعدة البيانات، المصادقة، المؤشرات
+database/schema.sql                 # مخطط MySQL الكامل
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## التثبيت والتشغيل
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. إعداد البيئة
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env
+```
 
-## Learn More
+عدّل `DATABASE_URL` و `JWT_SECRET` في ملف `.env`.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. إنشاء قاعدة البيانات
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. تشغيل المشروع
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+افتح [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## حسابات تجريبية
+
+| الدور | اسم المستخدم | كلمة المرور |
+|-------|-------------|-------------|
+| مدير النظام | `admin` | `admin123` |
+| جمعية مشتركة | `demo001` | `demo123` |
+
+## الوحدات الرئيسية
+
+### لوحة تحكم مدير النظام (`/admin`)
+
+- إدارة المشتركين (الجمعيات)
+- عدّاد تنازلي للاشتراك مع تنبيه أحمر عند ≤ 60 يوم
+- تجديد الاشتراك السنوي
+- تصدير التقارير (JSON / Excel)
+
+### بوابة الجمعية (`/client`)
+
+- **لوحة التحكم** — إحصائيات ومختصر مالي
+- **الدليل المحاسبي** — شجرة الحسابات
+- **سندات القبض والصرف** — مع قيود يومية تلقائية
+- **مؤشرات السلامة المالية** — 5 محاور / 11 مؤشر (100%)
+- صفحات إضافية: القيود، الدفاتر، التقارير، الرواتب، الإعدادات
+
+## جداول قاعدة البيانات
+
+- `associations` — الجمعيات المشتركة
+- `chart_of_accounts` — الدليل المحاسبي
+- `financial_vouchers` — سندات القبض والصرف
+- `journal_entries` — قيود اليومية
+- `safety_financial_inputs` — مدخلات السلامة المالية
+
+## أوامر مفيدة
+
+```bash
+npm run dev      # التطوير
+npm run build    # بناء الإنتاج
+npm run start    # تشغيل الإنتاج
+npm run lint     # فحص الكود
+```

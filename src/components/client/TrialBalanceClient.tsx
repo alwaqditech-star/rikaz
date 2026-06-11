@@ -1,0 +1,186 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { IconInbox, IconRefresh, IconScale } from "@tabler/icons-react";
+import { trialBalanceFilename } from "@/lib/accounting-export";
+import { fmtAmt } from "@/lib/format";
+import { ReportExportButtons } from "./ReportExportButtons";
+
+interface TrialRow {
+  account_code: string;
+  account_name: string;
+  debit_balance: number;
+  credit_balance: number;
+}
+
+export function TrialBalanceClient() {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [rows, setRows] = useState<TrialRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      const res = await fetch(`/api/client/trial?${params.toString()}`);
+      const json = await res.json();
+      if (json.success) setRows(json.data);
+      setLoaded(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [from, to]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const totalDebit = rows.reduce((sum, row) => sum + row.debit_balance, 0);
+  const totalCredit = rows.reduce((sum, row) => sum + row.credit_balance, 0);
+  const balanced = Math.abs(totalDebit - totalCredit) < 0.01;
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <div className="card-title">
+          <IconScale size={18} stroke={1.8} />
+          ميزان المراجعة
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <ReportExportButtons
+            disabled={loading || rows.length === 0}
+            buildExportUrl={(format) => {
+              const params = new URLSearchParams();
+              if (from) params.set("from", from);
+              if (to) params.set("to", to);
+              const query = params.toString();
+              return `/api/client/trial/export-${format}${query ? `?${query}` : ""}`;
+            }}
+            buildFilename={(extension) =>
+              trialBalanceFilename(from || undefined, to || undefined, extension)
+            }
+          />
+          <button type="button" className="btn btn-ghost btn-sm" onClick={loadData}>
+            <IconRefresh size={16} stroke={1.8} />
+            تحديث
+          </button>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "12px 0",
+          borderBottom: "1px solid var(--fog)",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--slate)", whiteSpace: "nowrap" }}>
+            الفترة من:
+          </span>
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            style={{
+              padding: "7px 10px",
+              border: "1.5px solid var(--silver)",
+              borderRadius: "var(--radius-sm)",
+              fontFamily: "var(--font)",
+              fontSize: 13,
+            }}
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--slate)", whiteSpace: "nowrap" }}>
+            إلى:
+          </span>
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            style={{
+              padding: "7px 10px",
+              border: "1.5px solid var(--silver)",
+              borderRadius: "var(--radius-sm)",
+              fontFamily: "var(--font)",
+              fontSize: 13,
+            }}
+          />
+        </div>
+        <button type="button" className="btn btn-primary btn-sm" onClick={loadData}>
+          تطبيق
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            setFrom("");
+            setTo("");
+          }}
+        >
+          مسح الفترة
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="tbl-empty">جاري التحميل...</div>
+      ) : !loaded || rows.length === 0 ? (
+        <div className="tbl-empty">
+          <IconInbox size={36} stroke={1.2} style={{ opacity: 0.4 }} />
+          لا توجد أرصدة في هذه الفترة
+        </div>
+      ) : (
+        <>
+          <div className="tbl-wrap" style={{ marginTop: 16 }}>
+            <table className="tb-table">
+              <thead>
+                <tr>
+                  <th>رمز الحساب</th>
+                  <th>اسم الحساب</th>
+                  <th>مدين (ر.س)</th>
+                  <th>دائن (ر.س)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.account_code}>
+                    <td style={{ fontFamily: "monospace", fontSize: 12, color: "var(--mist)" }}>
+                      {row.account_code}
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{row.account_name}</td>
+                    <td className="dr-val">
+                      {row.debit_balance > 0 ? fmtAmt(row.debit_balance) : "—"}
+                    </td>
+                    <td className="cr-val">
+                      {row.credit_balance > 0 ? fmtAmt(row.credit_balance) : "—"}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="total-main">
+                  <td colSpan={2} style={{ textAlign: "center" }}>
+                    الإجمالي
+                  </td>
+                  <td className="dr-val">{fmtAmt(totalDebit)}</td>
+                  <td className="cr-val">{fmtAmt(totalCredit)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className={`balance-check ${balanced ? "ok" : "err"}`}>
+            {balanced
+              ? "✓ ميزان المراجعة متوازن"
+              : `⚠ فرق الميزان: ${fmtAmt(Math.abs(totalDebit - totalCredit))} ر.س`}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

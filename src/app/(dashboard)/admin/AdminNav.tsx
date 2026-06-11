@@ -1,0 +1,41 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  IconLayoutDashboard,
+  IconUserCircle,
+  IconUsers,
+  type TablerIcon,
+} from "@tabler/icons-react";
+
+const navItems: { href: string; label: string; icon: TablerIcon }[] = [
+  { href: "/admin", label: "لوحة التحكم", icon: IconLayoutDashboard },
+  { href: "/admin/subscribers", label: "إدارة المشتركين", icon: IconUsers },
+  { href: "/admin/profile", label: "الملف الشخصي", icon: IconUserCircle },
+];
+
+export function AdminNav() {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {navItems.map((item) => {
+        const active =
+          item.href === "/admin"
+            ? pathname === "/admin"
+            : pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`sb-item${active ? " active" : ""}`}
+          >
+            <item.icon size={18} stroke={1.8} />
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
