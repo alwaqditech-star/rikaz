@@ -44,13 +44,23 @@ function ClientDashboardContent() {
   const deniedLevel = (searchParams.get("level") as ClientAccessLevel | null) ?? "read";
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/client/dashboard");
       const json = await res.json();
-      if (json.success) setData(json.data);
+      if (json.success) {
+        setData(json.data);
+        return;
+      }
+      setData(null);
+      setError(json.message || "فشل تحميل البيانات");
+    } catch {
+      setData(null);
+      setError("لا يمكن الاتصال بخادم API — تأكد من تشغيل api_project");
     } finally {
       setLoading(false);
     }
@@ -60,8 +70,25 @@ function ClientDashboardContent() {
     load();
   }, [load]);
 
-  if (loading || !data) {
+  if (loading) {
     return <div className="tbl-empty">جاري تحميل لوحة التحكم...</div>;
+  }
+
+  if (error || !data) {
+    return (
+      <div
+        className="card"
+        style={{
+          borderColor: "var(--ruby)",
+          background: "var(--ruby-pale)",
+          padding: 16,
+          fontWeight: 600,
+          color: "var(--ruby)",
+        }}
+      >
+        {error || "فشل تحميل البيانات"}
+      </div>
+    );
   }
 
   const netPositive = data.net >= 0;

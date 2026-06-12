@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
-import type { RowDataPacket } from "mysql2";
 import { IconBuildingCommunity, IconChartBar } from "@tabler/icons-react";
 import { AdminUserLink } from "@/components/admin/AdminUserLink";
 import { getSessionFromCookie } from "@/lib/auth";
-import { query } from "@/lib/db";
 import { AdminLogoutButton } from "./AdminLogoutButton";
 import { AdminNav } from "./AdminNav";
 
@@ -17,16 +15,7 @@ export default async function AdminLayout({
     redirect("/");
   }
 
-  let avatarUrl: string | null = session.avatar_url ?? null;
-  try {
-    const rows = await query<RowDataPacket[]>(
-      "SELECT avatar_url FROM admins WHERE id = ?",
-      [session.id],
-    );
-    avatarUrl = (rows[0]?.avatar_url as string | null) ?? null;
-  } catch {
-    // ignore if column not migrated yet
-  }
+  const avatarUrl: string | null = session.avatar_url ?? null;
 
   return (
     <>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { IconInbox, IconRefresh, IconScale } from "@tabler/icons-react";
-import { trialBalanceFilename } from "@/lib/accounting-export";
+import { trialBalanceFilename } from "@/lib/export-filenames";
 import { fmtAmt } from "@/lib/format";
 import { ReportExportButtons } from "./ReportExportButtons";
 

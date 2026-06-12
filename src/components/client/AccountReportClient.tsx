@@ -13,7 +13,7 @@ import { fmtAmt, fmtDate } from "@/lib/format";
 import {
   ledgerFilename,
   statementFilename,
-} from "@/lib/accounting-export";
+} from "@/lib/export-filenames";
 import { ReportExportButtons } from "./ReportExportButtons";
 
 interface AccountOption {

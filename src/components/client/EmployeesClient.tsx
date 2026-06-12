@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { calcEmployeeTotals } from "@/lib/employee-utils";
 import { fmtAmt, fmtDate, today } from "@/lib/format";
-import { employeesFilename } from "@/lib/hr-export";
+import { employeesFilename } from "@/lib/export-filenames";
 import type { Employee, EmployeeStatus } from "@/lib/types";
 import { useClientPermissions } from "./ClientPermissionsContext";
 import { ReportExportButtons } from "./ReportExportButtons";

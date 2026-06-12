@@ -3,20 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/verify-no-local-api.mjs && next dev",
+    "build": "node scripts/verify-no-local-api.mjs && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:api": "npm --prefix ../api_project run dev",
+    "dev:all": "node scripts/dev-all.mjs"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.44.0",
     "bcryptjs": "^3.0.3",
-    "exceljs": "^4.4.0",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.3",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
-    "mysql2": "^3.22.5",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4"

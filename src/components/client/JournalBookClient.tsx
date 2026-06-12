@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { IconChevronDown, IconInbox, IconNotebook } from "@tabler/icons-react";
-import { journalBookFilename } from "@/lib/accounting-export";
+import { journalBookFilename } from "@/lib/export-filenames";
 import { fmtAmt, fmtDate } from "@/lib/format";
 import { ReportExportButtons } from "./ReportExportButtons";
 

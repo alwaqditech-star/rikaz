@@ -9,7 +9,7 @@ import {
   IconUsersGroup,
 } from "@tabler/icons-react";
 import { fmtAmt } from "@/lib/format";
-import { payrollFilename } from "@/lib/hr-export";
+import { payrollFilename } from "@/lib/export-filenames";
 import type { Employee, PayrollPreview } from "@/lib/types";
 import { useClientPermissions } from "./ClientPermissionsContext";
 import { ReportExportButtons } from "./ReportExportButtons";
